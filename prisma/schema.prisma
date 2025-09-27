@@ -1,0 +1,287 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  phone       String?
+  avatar      String?
+  role        UserRole @default(RENTER)
+  isVerified  Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  ownedProperties    Property[]   @relation("PropertyOwner")
+  services          Service[]    @relation("ServiceProvider")
+  rentalBookings    Booking[]    @relation("RenterBookings")
+  serviceBookings   ServiceBooking[] @relation("ServiceBooker")
+  reviews           Review[]     @relation("ReviewAuthor")
+  receivedReviews   Review[]     @relation("ReviewTarget")
+  notifications     Notification[]
+  messages          Message[]
+
+  @@map("users")
+}
+
+model Property {
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  address         String
+  city            String
+  state           String
+  zipCode         String
+  country         String        @default("USA")
+  latitude        Float?
+  longitude       Float?
+  propertyType    PropertyType
+  bedrooms        Int
+  bathrooms       Int
+  area            Float
+  maxGuests       Int
+  pricePerNight   Float
+  cleaningFee     Float         @default(0)
+  securityDeposit Float         @default(0)
+  isActive        Boolean       @default(true)
+  availableFrom   DateTime
+  availableTo     DateTime?
+  amenities       String[]
+  images          String[]
+  rules           String[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relationships
+  owner           User          @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId         String
+  bookings        Booking[]
+  reviews         Review[]      @relation("PropertyReviews")
+  notifications   Notification[]
+
+  @@map("properties")
+}
+
+model Service {
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  category        ServiceCategory
+  price           Float
+  duration        Int           // in minutes
+  location        String
+  serviceArea     String[]      // areas where service is provided
+  isActive        Boolean       @default(true)
+  images          String[]
+  requirements    String[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relationships
+  provider        User          @relation("ServiceProvider", fields: [providerId], references: [id], onDelete: Cascade)
+  providerId      String
+  bookings        ServiceBooking[]
+  reviews         Review[]      @relation("ServiceReviews")
+
+  @@map("services")
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  checkInDate     DateTime
+  checkOutDate    DateTime
+  totalNights     Int
+  baseAmount      Float
+  cleaningFee     Float         @default(0)
+  securityDeposit Float         @default(0)
+  totalAmount     Float
+  status          BookingStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  paymentIntentId String?       // for mock payment tracking
+  specialRequests String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relationships
+  renter          User          @relation("RenterBookings", fields: [renterId], references: [id], onDelete: Cascade)
+  renterId        String
+  property        Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId      String
+  payment         Payment?
+  notifications   Notification[]
+
+  @@map("bookings")
+}
+
+model ServiceBooking {
+  id              String        @id @default(cuid())
+  scheduledDate   DateTime
+  scheduledTime   String
+  duration        Int           // in minutes
+  totalAmount     Float
+  status          BookingStatus @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  paymentIntentId String?       // for mock payment tracking
+  specialRequests String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relationships
+  booker          User          @relation("ServiceBooker", fields: [bookerId], references: [id], onDelete: Cascade)
+  bookerId        String
+  service         Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId       String
+  payment         Payment?
+
+  @@map("service_bookings")
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  amount            Float
+  currency          String        @default("USD")
+  paymentMethod     String
+  paymentIntentId   String        // mock payment ID
+  status            PaymentStatus @default(PENDING)
+  processedAt       DateTime?
+  refundedAt        DateTime?
+  refundAmount      Float?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relationships (one-to-one with either booking or service booking)
+  booking           Booking?      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingId         String?       @unique
+  serviceBooking    ServiceBooking? @relation(fields: [serviceBookingId], references: [id], onDelete: Cascade)
+  serviceBookingId  String?       @unique
+
+  @@map("payments")
+}
+
+model Review {
+  id            String      @id @default(cuid())
+  rating        Int         // 1-5 stars
+  comment       String?
+  reviewType    ReviewType  // PROPERTY or SERVICE
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relationships
+  author        User        @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId      String
+  targetUser    User        @relation("ReviewTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  targetUserId  String
+  property      Property?   @relation("PropertyReviews", fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId    String?
+  service       Service?    @relation("ServiceReviews", fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId     String?
+
+  @@map("reviews")
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  title       String
+  message     String
+  type        NotificationType
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  // Relationships
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  booking     Booking?         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingId   String?
+  property    Property?        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId  String?
+
+  @@map("notifications")
+}
+
+model Message {
+  id          String    @id @default(cuid())
+  content     String
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  // Relationships
+  sender      User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId    String
+
+  @@map("messages")
+}
+
+// Enums
+enum UserRole {
+  RENTER
+  OWNER
+  SERVICE_PROVIDER
+  ADMIN
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  CONDO
+  VILLA
+  STUDIO
+  LOFT
+  TOWNHOUSE
+}
+
+enum ServiceCategory {
+  CLEANING
+  MAINTENANCE
+  SECURITY
+  CONCIERGE
+  TRANSPORTATION
+  CATERING
+  OTHER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  IN_PROGRESS
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum ReviewType {
+  PROPERTY
+  SERVICE
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  PAYMENT_COMPLETED
+  REVIEW_RECEIVED
+  MESSAGE_RECEIVED
+  PROPERTY_APPROVED
+  SERVICE_APPROVED
+  GENERAL
+}
