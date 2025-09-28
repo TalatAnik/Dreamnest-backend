@@ -11,6 +11,8 @@ const requestLogger = require('./src/middleware/requestLogger');
 // Import routes
 const authRoutes = require('./src/routes/auth');
 const propertyRoutes = require('./src/routes/properties');
+const serviceRoutes = require('./src/routes/serviceRoutes');
+const serviceBookingRoutes = require('./src/routes/serviceBookingRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -61,6 +63,8 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/bookings', serviceBookingRoutes);
 
 // Handle 404 for API routes
 app.use('/api/*', (req, res) => {
