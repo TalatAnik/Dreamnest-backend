@@ -26,8 +26,9 @@ model User {
 
   // Relationships
   ownedProperties    Property[]   @relation("PropertyOwner")
+  tenantProperties   Property[]   @relation("PropertyTenant")
   services          Service[]    @relation("ServiceProvider")
-  rentalBookings    Booking[]    @relation("RenterBookings")
+  leaseApplications LeaseApplication[] @relation("RenterApplications")
   serviceBookings   ServiceBooking[] @relation("ServiceBooker")
   reviews           Review[]     @relation("ReviewAuthor")
   receivedReviews   Review[]     @relation("ReviewTarget")
@@ -45,30 +46,37 @@ model Property {
   city            String
   state           String
   zipCode         String
-  country         String        @default("USA")
+  country         String        @default("Bangladesh")
   latitude        Float?
   longitude       Float?
   propertyType    PropertyType
   bedrooms        Int
   bathrooms       Int
-  area            Float
-  maxGuests       Int
-  pricePerNight   Float
-  cleaningFee     Float         @default(0)
-  securityDeposit Float         @default(0)
+  area            Float         // in square feet
+  maxOccupants    Int?          // Maximum number of people who can live in the property
+  monthlyRent     Float?        // Monthly rent in BDT
+  securityDeposit Float         @default(0)  // One-time security deposit
   isActive        Boolean       @default(true)
-  availableFrom   DateTime
-  availableTo     DateTime?
+  availableFrom   DateTime?     // When property becomes available for leasing
   amenities       String[]
   images          String[]
   rules           String[]
+  
+  // Lease Management
+  leaseStatus     LeaseStatus   @default(VACANT)
+  currentTenant   User?         @relation("PropertyTenant", fields: [currentTenantId], references: [id])
+  currentTenantId String?
+  leaseStartDate  DateTime?     // Current lease start date
+  leaseEndDate    DateTime?     // Current lease end date
+  nextRentDue     DateTime?     // Next rent due date
+  
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   // Relationships
   owner           User          @relation("PropertyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId         String
-  bookings        Booking[]
+  leaseApplications LeaseApplication[]
   reviews         Review[]      @relation("PropertyReviews")
   notifications   Notification[]
 
@@ -99,32 +107,28 @@ model Service {
   @@map("services")
 }
 
-model Booking {
-  id              String        @id @default(cuid())
-  checkInDate     DateTime
-  checkOutDate    DateTime
-  totalNights     Int
-  baseAmount      Float
-  cleaningFee     Float         @default(0)
-  securityDeposit Float         @default(0)
-  totalAmount     Float
-  status          BookingStatus @default(PENDING)
-  paymentStatus   PaymentStatus @default(PENDING)
-  paymentMethod   String?
-  paymentIntentId String?       // for mock payment tracking
-  specialRequests String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+model LeaseApplication {
+  id                String              @id @default(cuid())
+  preferredMoveInDate DateTime
+  leaseDuration     Int                 // in months
+  monthlyIncome     Float               // applicant's monthly income
+  employmentStatus  String
+  previousAddress   String?
+  emergencyContact  String
+  emergencyPhone    String
+  specialRequests   String?
+  status            ApplicationStatus   @default(PENDING)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
   // Relationships
-  renter          User          @relation("RenterBookings", fields: [renterId], references: [id], onDelete: Cascade)
-  renterId        String
-  property        Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  propertyId      String
-  payment         Payment?
-  notifications   Notification[]
+  applicant         User                @relation("RenterApplications", fields: [applicantId], references: [id], onDelete: Cascade)
+  applicantId       String
+  property          Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId        String
+  notifications     Notification[]
 
-  @@map("bookings")
+  @@map("lease_applications")
 }
 
 model ServiceBooking {
@@ -164,9 +168,7 @@ model Payment {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  // Relationships (one-to-one with either booking or service booking)
-  booking           Booking?      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  bookingId         String?       @unique
+  // Relationships (for service bookings only - rent payments are handled separately)
   serviceBooking    ServiceBooking? @relation(fields: [serviceBookingId], references: [id], onDelete: Cascade)
   serviceBookingId  String?       @unique
 
@@ -203,12 +205,12 @@ model Notification {
   createdAt   DateTime         @default(now())
 
   // Relationships
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  booking     Booking?         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  bookingId   String?
-  property    Property?        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  propertyId  String?
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  leaseApplication  LeaseApplication? @relation(fields: [leaseApplicationId], references: [id], onDelete: Cascade)
+  leaseApplicationId String?
+  property          Property?        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId        String?
 
   @@map("notifications")
 }
@@ -242,6 +244,21 @@ enum PropertyType {
   STUDIO
   LOFT
   TOWNHOUSE
+}
+
+enum LeaseStatus {
+  VACANT
+  OCCUPIED
+  UNDER_APPLICATION
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
 }
 
 enum ServiceCategory {

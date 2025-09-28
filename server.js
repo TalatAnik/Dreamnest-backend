@@ -10,6 +10,7 @@ const requestLogger = require('./src/middleware/requestLogger');
 
 // Import routes
 const authRoutes = require('./src/routes/auth');
+const propertyRoutes = require('./src/routes/properties');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -59,6 +60,7 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/properties', propertyRoutes);
 
 // Handle 404 for API routes
 app.use('/api/*', (req, res) => {

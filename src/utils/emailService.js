@@ -71,6 +71,22 @@ class MockEmailService {
     await new Promise(resolve => setTimeout(resolve, 100));
     return true;
   }
+
+  /**
+   * Send general email
+   * @param {string} email - Recipient email
+   * @param {string} subject - Email subject
+   * @param {string} body - Email body
+   * @returns {Promise<boolean>} - Success status
+   */
+  async sendEmail(email, subject, body) {
+    console.log(`📧 [MOCK EMAIL] Email sent to: ${email}`);
+    console.log(`   Subject: ${subject}`);
+    console.log(`   Body: ${body.substring(0, 200)}${body.length > 200 ? '...' : ''}`);
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return true;
+  }
 }
 
 const emailService = new MockEmailService();
