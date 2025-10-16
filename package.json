@@ -13,6 +13,9 @@
     "download-images": "node scripts/download-images.js",
     "test": "jest"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "keywords": [
     "nodejs",
     "express",

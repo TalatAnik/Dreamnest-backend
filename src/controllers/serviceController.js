@@ -122,8 +122,7 @@ const getServices = async (req, res) => {
               id: true,
               firstName: true,
               lastName: true,
-              avatar: true,
-              rating: true
+              avatar: true
             }
           },
           reviews: {
@@ -207,7 +206,6 @@ const getServiceById = async (req, res) => {
             email: true,
             phone: true,
             avatar: true,
-            rating: true,
             createdAt: true
           }
         },
@@ -502,6 +500,156 @@ const getServicesByProvider = async (req, res) => {
   }
 };
 
+// Get provider profile with reviews and services
+const getProviderProfile = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+
+    // Get provider details
+    const provider = await prisma.user.findUnique({
+      where: { id: providerId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        avatar: true,
+        createdAt: true,
+        services: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            description: true,
+            price: true,
+            duration: true,
+            images: true,
+            location: true,
+            reviews: {
+              select: { rating: true }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    });
+
+    if (!provider) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Provider not found'
+      });
+    }
+
+    // Get reviews for all provider's services
+    const reviews = await prisma.review.findMany({
+      where: {
+        service: {
+          providerId: providerId
+        },
+        reviewType: 'SERVICE'
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatar: true
+          }
+        },
+        service: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10
+    });
+
+    // Calculate provider stats
+    const allReviews = await prisma.review.findMany({
+      where: {
+        service: {
+          providerId: providerId
+        },
+        reviewType: 'SERVICE'
+      },
+      select: { rating: true }
+    });
+
+    const avgRating = allReviews.length > 0
+      ? allReviews.reduce((sum, review) => sum + review.rating, 0) / allReviews.length
+      : 0;
+
+    const totalServices = provider.services.length;
+    const totalReviews = allReviews.length;
+
+    // Transform response
+    const profileResponse = {
+      id: provider.id,
+      name: `${provider.firstName} ${provider.lastName}`,
+      firstName: provider.firstName,
+      lastName: provider.lastName,
+      email: provider.email,
+      phone: provider.phone,
+      avatar: provider.avatar,
+      joinedDate: provider.createdAt,
+      stats: {
+        totalServices,
+        totalReviews,
+        averageRating: Math.round(avgRating * 10) / 10
+      },
+      services: provider.services.map(service => ({
+        id: service.id,
+        name: service.name,
+        category: service.category,
+        description: service.description,
+        price: service.price,
+        duration: service.duration,
+        images: service.images,
+        location: service.location,
+        rating: service.reviews.length > 0
+          ? Math.round((service.reviews.reduce((sum, r) => sum + r.rating, 0) / service.reviews.length) * 10) / 10
+          : 0,
+        reviewCount: service.reviews.length
+      })),
+      recentReviews: reviews.map(review => ({
+        id: review.id,
+        rating: review.rating,
+        title: review.title,
+        comment: review.comment,
+        author: {
+          id: review.author.id,
+          name: `${review.author.firstName} ${review.author.lastName}`,
+          avatar: review.author.avatar
+        },
+        service: {
+          id: review.service.id,
+          name: review.service.name
+        },
+        createdAt: review.createdAt
+      }))
+    };
+
+    res.status(200).json({
+      status: 'success',
+      data: { provider: profileResponse }
+    });
+  } catch (error) {
+    console.error('Get provider profile error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch provider profile',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 // Get service categories
 const getServiceCategories = async (req, res) => {
   try {
@@ -528,6 +676,71 @@ const getServiceCategories = async (req, res) => {
     res.status(500).json({
       status: 'error',  
       message: 'Failed to fetch service categories',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// Get featured service providers
+const getFeaturedProviders = async (req, res) => {
+  try {
+    const { limit = 6 } = req.query;
+
+    // Get top-rated service providers with their services
+    const providers = await prisma.user.findMany({
+      where: {
+        role: 'SERVICE_PROVIDER',
+        services: {
+          some: {
+            isActive: true
+          }
+        }
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        avatar: true,
+        services: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            title: true,
+            category: true,
+            price: true,
+            images: true
+          }
+        }
+      }
+    });
+
+    // Sort by number of services and take limit
+    const sortedProviders = providers
+      .sort((a, b) => b.services.length - a.services.length)
+      .slice(0, parseInt(limit));
+
+    // Transform data for frontend
+    const providersList = sortedProviders.map(provider => ({
+      id: provider.id,
+      name: `${provider.firstName} ${provider.lastName}`,
+      email: provider.email,
+      phone: provider.phone,
+      avatar: provider.avatar,
+      serviceCount: provider.services.length,
+      recentServices: provider.services.slice(0, 3)
+    }));
+
+    res.status(200).json({
+      status: 'success',
+      data: { providers: providersList }
+    });
+  } catch (error) {
+    console.error('Get featured providers error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch featured providers',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
@@ -677,5 +890,7 @@ module.exports = {
   deleteService,
   getServicesByProvider,
   getServiceCategories,
+  getFeaturedProviders,
+  getProviderProfile,
   getProviderReviews
 };

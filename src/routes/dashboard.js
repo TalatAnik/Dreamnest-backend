@@ -1,9 +1,10 @@
 const express = require('express');
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const {
   getRenterDashboard,
   getOwnerDashboard,
-  getProviderDashboard
+  getProviderDashboard,
+  getDashboard
 } = require('../controllers/dashboardController');
 
 const router = express.Router();
@@ -11,9 +12,12 @@ const router = express.Router();
 // All dashboard routes require authentication
 router.use(authenticateToken);
 
-// Role-specific dashboard routes
-router.get('/renter', requireRole('RENTER'), getRenterDashboard);
-router.get('/owner', requireRole('OWNER'), getOwnerDashboard);
-router.get('/provider', requireRole('SERVICE_PROVIDER'), getProviderDashboard);
+// Unified dashboard endpoint - role determined by authenticated user's token
+router.get('/', getDashboard);
+
+// Legacy role-specific endpoints (deprecated but kept for backwards compatibility)
+router.get('/renter', getRenterDashboard);
+router.get('/owner', getOwnerDashboard);
+router.get('/provider', getProviderDashboard);
 
 module.exports = router;

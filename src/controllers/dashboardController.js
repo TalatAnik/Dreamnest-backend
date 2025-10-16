@@ -7,19 +7,19 @@ const prisma = new PrismaClient();
  */
 const getRenterDashboard = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Get saved/favorite properties
     const savedProperties = await prisma.property.findMany({
       where: {
-        status: 'APPROVED',
+        isActive: true,
         // Note: In a real app, you'd have a favorites/bookmarks table
         // For now, we'll return recent properties as an example
       },
       select: {
         id: true,
         title: true,
-        price: true,
+        monthlyRent: true,
         images: true,
         city: true,
         state: true
@@ -30,7 +30,7 @@ const getRenterDashboard = async (req, res) => {
 
     // Get recent bookings
     const recentBookings = await prisma.serviceBooking.findMany({
-      where: { renterId: userId },
+      where: { bookerId: userId },
       include: {
         service: {
           select: {
@@ -65,7 +65,7 @@ const getRenterDashboard = async (req, res) => {
     // Get pending reviews
     const pendingReviews = await prisma.serviceBooking.findMany({
       where: {
-        renterId: userId,
+        bookerId: userId,
         status: 'COMPLETED'
       },
       include: {
@@ -98,7 +98,7 @@ const getRenterDashboard = async (req, res) => {
       status: 'success',
       data: {
         savedProperties,
-        recentBookings,
+        bookingHistory: recentBookings,
         recentSearches,
         pendingReviews: pendingReviewsFiltered
       }
@@ -118,7 +118,7 @@ const getRenterDashboard = async (req, res) => {
  */
 const getOwnerDashboard = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Get owner's properties
     const properties = await prisma.property.findMany({
@@ -126,8 +126,8 @@ const getOwnerDashboard = async (req, res) => {
       select: {
         id: true,
         title: true,
-        status: true,
-        price: true,
+        isActive: true,
+        monthlyRent: true,
         images: true,
         createdAt: true,
         _count: {
@@ -154,7 +154,7 @@ const getOwnerDashboard = async (req, res) => {
             title: true
           }
         },
-        renter: {
+        booker: {
           select: {
             id: true,
             firstName: true,
@@ -181,7 +181,7 @@ const getOwnerDashboard = async (req, res) => {
         status: 'COMPLETED'
       },
       include: {
-        renter: {
+        booker: {
           select: {
             id: true,
             firstName: true,
@@ -190,13 +190,13 @@ const getOwnerDashboard = async (req, res) => {
           }
         }
       },
-      distinct: ['renterId'],
+      distinct: ['bookerId'],
       take: 10
     });
 
     // Calculate analytics
     const totalProperties = properties.length;
-    const activeProperties = properties.filter(p => p.status === 'APPROVED').length;
+    const activeProperties = properties.filter(p => p.isActive === true).length;
     const totalBookings = bookings.length;
     const completedBookings = bookings.filter(b => b.status === 'COMPLETED').length;
 
@@ -218,7 +218,7 @@ const getOwnerDashboard = async (req, res) => {
       data: {
         properties,
         bookings,
-        tenants: tenants.map(t => t.renter),
+        tenants: tenants.map(t => t.booker),
         analytics: {
           totalProperties,
           activeProperties,
@@ -243,7 +243,7 @@ const getOwnerDashboard = async (req, res) => {
  */
 const getProviderDashboard = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Get provider's services
     const services = await prisma.service.findMany({
@@ -251,7 +251,7 @@ const getProviderDashboard = async (req, res) => {
       select: {
         id: true,
         title: true,
-        status: true,
+        isActive: true,
         price: true,
         category: true,
         images: true,
@@ -284,7 +284,7 @@ const getProviderDashboard = async (req, res) => {
             title: true
           }
         },
-        renter: {
+        booker: {
           select: {
             id: true,
             firstName: true,
@@ -312,7 +312,7 @@ const getProviderDashboard = async (req, res) => {
             title: true
           }
         },
-        renter: {
+        booker: {
           select: {
             id: true,
             firstName: true,
@@ -385,7 +385,47 @@ const getProviderDashboard = async (req, res) => {
   }
 };
 
+/**
+ * Unified dashboard endpoint - role determined by authenticated user's token
+ * This is the secure way to fetch dashboard data - role is derived from JWT, not frontend input
+ */
+const getDashboard = async (req, res) => {
+  try {
+    const userRole = req.user.role;
+
+    // Route to appropriate dashboard based on authenticated user's role
+    if (userRole === 'RENTER') {
+      return getRenterDashboard(req, res);
+    } else if (userRole === 'OWNER') {
+      return getOwnerDashboard(req, res);
+    } else if (userRole === 'SERVICE_PROVIDER') {
+      return getProviderDashboard(req, res);
+    } else if (userRole === 'ADMIN') {
+      // For admin, return a generic dashboard or admin-specific one
+      return res.json({
+        status: 'success',
+        data: {
+          role: 'ADMIN',
+          message: 'Admin dashboard - implement as needed'
+        }
+      });
+    } else {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Unknown user role'
+      });
+    }
+  } catch (error) {
+    console.error('Get unified dashboard error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch dashboard'
+    });
+  }
+};
+
 module.exports = {
+  getDashboard,
   getRenterDashboard,
   getOwnerDashboard,
   getProviderDashboard

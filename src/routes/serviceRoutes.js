@@ -32,6 +32,11 @@ router.get('/categories',
   serviceController.getServiceCategories
 );
 
+// Get featured service providers
+router.get('/featured',
+  serviceController.getFeaturedProviders
+);
+
 // Get services by provider ID
 router.get('/provider/:providerId',
   serviceValidator.validateProviderId,
@@ -44,6 +49,13 @@ router.get('/providers/:providerId/reviews',
   serviceValidator.validateProviderId,
   validateRequest,
   serviceController.getProviderReviews
+);
+
+// Get provider profile with services and reviews
+router.get('/providers/:providerId/profile',
+  serviceValidator.validateProviderId,
+  validateRequest,
+  serviceController.getProviderProfile
 );
 
 // Get single service by ID
