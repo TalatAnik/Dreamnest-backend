@@ -39,6 +39,13 @@ router.get('/provider/:providerId',
   serviceController.getServicesByProvider
 );
 
+// Get reviews for all services by a provider
+router.get('/providers/:providerId/reviews',
+  serviceValidator.validateProviderId,
+  validateRequest,
+  serviceController.getProviderReviews
+);
+
 // Get single service by ID
 router.get('/:id',
   serviceValidator.validateServiceId,

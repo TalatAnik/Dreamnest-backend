@@ -533,6 +533,142 @@ const getServiceCategories = async (req, res) => {
   }
 };
 
+// Get reviews for all services by a provider
+const getProviderReviews = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // First, get all services by this provider
+    const services = await prisma.service.findMany({
+      where: { providerId },
+      select: { id: true }
+    });
+
+    const serviceIds = services.map(service => service.id);
+
+    if (serviceIds.length === 0) {
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          reviews: [],
+          summary: {
+            totalReviews: 0,
+            averageRating: 0,
+            ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          },
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total: 0,
+            totalPages: 0,
+            hasNext: false,
+            hasPrev: false
+          }
+        }
+      });
+    }
+
+    // Get reviews for all services by this provider
+    const [reviews, total] = await Promise.all([
+      prisma.review.findMany({
+        where: {
+          serviceId: { in: serviceIds },
+          reviewType: 'SERVICE'
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true
+            }
+          },
+          service: {
+            select: {
+              id: true,
+              name: true,
+              category: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip,
+        take: parseInt(limit)
+      }),
+      prisma.review.count({
+        where: {
+          serviceId: { in: serviceIds },
+          reviewType: 'SERVICE'
+        }
+      })
+    ]);
+
+    // Calculate rating distribution and average
+    const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let totalRating = 0;
+
+    reviews.forEach(review => {
+      ratingDistribution[review.rating]++;
+      totalRating += review.rating;
+    });
+
+    // Also count all reviews for the summary (not just paginated ones)
+    const allReviews = await prisma.review.findMany({
+      where: {
+        serviceId: { in: serviceIds },
+        reviewType: 'SERVICE'
+      },
+      select: { rating: true }
+    });
+
+    const totalReviews = allReviews.length;
+    const averageRating = totalReviews > 0
+      ? Math.round((allReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews) * 10) / 10
+      : 0;
+
+    // Calculate rating distribution for all reviews
+    const fullRatingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    allReviews.forEach(review => {
+      fullRatingDistribution[review.rating]++;
+    });
+
+    const totalPages = Math.ceil(total / parseInt(limit));
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        reviews,
+        summary: {
+          totalReviews,
+          averageRating,
+          ratingDistribution: fullRatingDistribution
+        },
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          totalPages,
+          hasNext: parseInt(page) < totalPages,
+          hasPrev: parseInt(page) > 1
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get provider reviews error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch provider reviews',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 module.exports = {
   createService,
   getServices,
@@ -540,5 +676,6 @@ module.exports = {
   updateService,
   deleteService,
   getServicesByProvider,
-  getServiceCategories
+  getServiceCategories,
+  getProviderReviews
 };
