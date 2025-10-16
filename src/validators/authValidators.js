@@ -124,9 +124,39 @@ const changePasswordSchema = Joi.object({
     })
 });
 
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Please enter a valid email address',
+      'any.required': 'Email is required'
+    })
+});
+
+const resetPasswordSchema = Joi.object({
+  token: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Reset token is required'
+    }),
+  
+  newPassword: Joi.string()
+    .min(6)
+    .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)'))
+    .required()
+    .messages({
+      'string.min': 'New password must be at least 6 characters long',
+      'string.pattern.base': 'New password must contain at least one lowercase letter, one uppercase letter, and one number',
+      'any.required': 'New password is required'
+    })
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   updateProfileSchema,
-  changePasswordSchema
+  changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema
 };

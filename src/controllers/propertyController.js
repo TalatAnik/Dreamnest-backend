@@ -745,6 +745,91 @@ const removePropertyImage = async (req, res) => {
   }
 };
 
+/**
+ * Get reviews for a specific property
+ */
+const getPropertyReviews = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if property exists
+    const property = await prisma.property.findUnique({
+      where: { id },
+      select: { id: true, title: true }
+    });
+
+    if (!property) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Property not found'
+      });
+    }
+
+    // Get reviews for the property
+    const reviews = await prisma.review.findMany({
+      where: {
+        propertyId: id,
+        reviewType: 'PROPERTY'
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatar: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    // Calculate average rating
+    const totalReviews = reviews.length;
+    const averageRating = totalReviews > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+      : 0;
+
+    // Group reviews by rating
+    const ratingDistribution = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0
+    };
+
+    reviews.forEach(review => {
+      ratingDistribution[review.rating]++;
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        property: {
+          id: property.id,
+          title: property.title
+        },
+        reviews,
+        summary: {
+          totalReviews,
+          averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+          ratingDistribution
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get property reviews error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get property reviews',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 module.exports = {
   createProperty,
   getProperties,
@@ -753,5 +838,6 @@ module.exports = {
   deleteProperty,
   getUserProperties,
   sendPropertyInquiry,
-  removePropertyImage
+  removePropertyImage,
+  getPropertyReviews
 };

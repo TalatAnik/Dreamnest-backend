@@ -10,7 +10,9 @@ const {
   registerSchema, 
   loginSchema, 
   updateProfileSchema, 
-  changePasswordSchema 
+  changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema
 } = require('../validators/authValidators');
 
 const prisma = new PrismaClient();
@@ -313,10 +315,133 @@ const changePassword = async (req, res, next) => {
   }
 };
 
+/**
+ * Forgot password - send reset email
+ */
+const forgotPassword = async (req, res, next) => {
+  try {
+    // Validate request body
+    const { error, value } = forgotPasswordSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Validation error',
+        details: error.details.map(detail => detail.message)
+      });
+    }
+
+    const { email } = value;
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    // Always return success for security (don't reveal if email exists)
+    if (!user) {
+      return res.status(200).json({
+        status: 'success',
+        message: 'If an account with this email exists, a password reset link has been sent.'
+      });
+    }
+
+    // Generate secure reset token
+    const resetToken = generateSecureToken();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Save reset token
+    await prisma.passwordReset.create({
+      data: {
+        email,
+        token: resetToken,
+        expiresAt
+      }
+    });
+
+    // Send reset email
+    try {
+      await emailService.sendPasswordResetEmail(email, user.firstName, resetToken);
+    } catch (emailError) {
+      console.error('Failed to send password reset email:', emailError);
+      // Don't fail the request if email fails
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'If an account with this email exists, a password reset link has been sent.'
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Reset password with token
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    // Validate request body
+    const { error, value } = resetPasswordSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Validation error',
+        details: error.details.map(detail => detail.message)
+      });
+    }
+
+    const { token, newPassword } = value;
+
+    // Find valid reset token
+    const resetRecord = await prisma.passwordReset.findFirst({
+      where: {
+        token,
+        used: false,
+        expiresAt: {
+          gt: new Date()
+        }
+      }
+    });
+
+    if (!resetRecord) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid or expired reset token'
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    // Update user password
+    await prisma.user.update({
+      where: { email: resetRecord.email },
+      data: { password: hashedPassword }
+    });
+
+    // Mark token as used
+    await prisma.passwordReset.update({
+      where: { id: resetRecord.id },
+      data: { used: true }
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password reset successfully'
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
+  forgotPassword,
+  resetPassword
 };

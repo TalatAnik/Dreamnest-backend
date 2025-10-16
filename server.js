@@ -20,6 +20,7 @@ const searchRoutes = require('./src/routes/search');
 const dashboardRoutes = require('./src/routes/dashboard');
 const analyticsRoutes = require('./src/routes/analytics');
 const messageRoutes = require('./src/routes/messages');
+const notificationRoutes = require('./src/routes/notifications');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -79,6 +80,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Handle 404 for API routes
 app.use('/api/*', (req, res) => {

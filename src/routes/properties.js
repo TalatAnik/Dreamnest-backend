@@ -7,7 +7,8 @@ const {
   deleteProperty,
   getUserProperties,
   sendPropertyInquiry,
-  removePropertyImage
+  removePropertyImage,
+  getPropertyReviews
 } = require('../controllers/propertyController');
 
 const { authenticateToken, requireRole } = require('../middleware/auth');
@@ -40,6 +41,14 @@ router.get(
   validatePropertyId,
   validateRequest,
   getPropertyById
+);
+
+// Get reviews for a specific property
+router.get(
+  '/:id/reviews',
+  validatePropertyId,
+  validateRequest,
+  getPropertyReviews
 );
 
 // Protected routes (authentication required)
