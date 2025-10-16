@@ -1,0 +1,384 @@
+{
+  "users": [
+    {
+      "id": "user_1",
+      "email": "john.doe@example.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "+8801711234567",
+      "role": "RENTER",
+      "isVerified": true,
+      "isActive": true,
+      "avatar": "/uploads/avatars/user_1.jpg",
+      "createdAt": "2024-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "user_2",
+      "email": "sarah.ahmed@example.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "Sarah",
+      "lastName": "Ahmed",
+      "phone": "+8801712345678",
+      "role": "OWNER",
+      "isVerified": true,
+      "isActive": true,
+      "avatar": "https://images.unsplash.com/photo-1494790108755-2616b9211e20?w=150&q=80",
+      "createdAt": "2024-02-10T00:00:00.000Z"
+    },
+    {
+      "id": "user_3",
+      "email": "mike.johnson@example.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "Michael",
+      "lastName": "Johnson",
+      "phone": "+8801713456789",
+      "role": "SERVICE_PROVIDER",
+      "isVerified": true,
+      "isActive": true,
+      "avatar": "/uploads/avatars/user_3.jpg",
+      "createdAt": "2024-03-05T00:00:00.000Z"
+    },
+    {
+      "id": "user_4",
+      "email": "emma.wilson@example.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "Emma",
+      "lastName": "Wilson",
+      "phone": "+8801714567890",
+      "role": "RENTER",
+      "isVerified": false,
+      "isActive": false,
+      "avatar": "/uploads/avatars/user_5.jpg",
+      "createdAt": "2024-04-20T00:00:00.000Z"
+    },
+    {
+      "id": "user_5",
+      "email": "rahman.khan@example.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "Dr. Rahman",
+      "lastName": "Khan",
+      "phone": "+8801715678901",
+      "role": "OWNER",
+      "isVerified": false,
+      "isActive": true,
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80",
+      "createdAt": "2024-09-15T00:00:00.000Z"
+    },
+    {
+      "id": "user_6",
+      "email": "info@cleanpro.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "CleanPro",
+      "lastName": "Services",
+      "phone": "+8801716789012",
+      "role": "SERVICE_PROVIDER",
+      "isVerified": true,
+      "isActive": true,
+      "avatar": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=150&q=80",
+      "createdAt": "2024-01-08T00:00:00.000Z"
+    },
+    {
+      "id": "user_7",
+      "email": "renter@dreamnest.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "Alex",
+      "lastName": "Thompson",
+      "phone": "+8801717890123",
+      "role": "RENTER",
+      "isVerified": true,
+      "isActive": true,
+      "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&q=80",
+      "createdAt": "2024-05-10T00:00:00.000Z"
+    },
+    {
+      "id": "user_8",
+      "email": "owner@dreamnest.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "Fatima",
+      "lastName": "Begum",
+      "phone": "+8801718901234",
+      "role": "OWNER",
+      "isVerified": true,
+      "isActive": true,
+      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80",
+      "createdAt": "2023-08-22T00:00:00.000Z"
+    },
+    {
+      "id": "user_9",
+      "email": "provider@dreamnest.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "Karim",
+      "lastName": "Rahman",
+      "phone": "+8801719012345",
+      "role": "SERVICE_PROVIDER",
+      "isVerified": true,
+      "isActive": true,
+      "avatar": "/uploads/avatars/user_1.jpg",
+      "createdAt": "2023-11-10T00:00:00.000Z"
+    },
+    {
+      "id": "user_10",
+      "email": "admin@dreamnest.com",
+      "password": "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYQmHqU2nO6",
+      "firstName": "Admin",
+      "lastName": "User",
+      "phone": "+8801710123456",
+      "role": "ADMIN",
+      "isVerified": true,
+      "isActive": true,
+      "avatar": "/uploads/avatars/user_4.jpg",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "properties": [
+    {
+      "id": "prop_1",
+      "title": "Modern Luxury Apartment in Gulshan",
+      "description": "This stunning modern apartment offers the perfect blend of luxury and comfort in the heart of Gulshan. With floor-to-ceiling windows, you'll enjoy abundant natural light and breathtaking city views.",
+      "address": "House 45, Road 11, Block C, Gulshan 2",
+      "city": "Dhaka",
+      "state": "Dhaka",
+      "zipCode": "1212",
+      "latitude": 23.7949,
+      "longitude": 90.4143,
+      "propertyType": "APARTMENT",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area": 1600,
+      "maxOccupants": 4,
+      "monthlyRent": 1800,
+      "securityDeposit": 5400,
+      "isActive": true,
+      "availableFrom": "2025-10-01T00:00:00.000Z",
+      "leaseStatus": "VACANT",
+      "amenities": [
+        "Air Conditioning",
+        "High-Speed Internet",
+        "Modern Kitchen",
+        "Dishwasher",
+        "Washing Machine",
+        "Built-in Wardrobes",
+        "City Views",
+        "Natural Light",
+        "Security System",
+        "Elevator Access",
+        "Backup Generator",
+        "Parking Space"
+      ],
+      "images": [
+        "https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/2121121/pexels-photo-2121121.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/2102587/pexels-photo-2102587.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "rules": [
+        "No smoking",
+        "No pets",
+        "Quiet hours 10 PM - 6 AM"
+      ],
+      "ownerId": "user_2",
+      "createdAt": "2024-09-20T00:00:00.000Z"
+    },
+    {
+      "id": "prop_2",
+      "title": "Cozy Studio in Dhanmondi",
+      "description": "Perfect for students or young professionals. This cozy studio apartment is fully furnished and located in the heart of Dhanmondi.",
+      "address": "Road 27, House 12, Dhanmondi",
+      "city": "Dhaka",
+      "state": "Dhaka",
+      "zipCode": "1209",
+      "latitude": 23.7461,
+      "longitude": 90.376,
+      "propertyType": "STUDIO",
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "area": 650,
+      "maxOccupants": 2,
+      "monthlyRent": 1200,
+      "securityDeposit": 2400,
+      "isActive": true,
+      "availableFrom": "2024-11-01T00:00:00.000Z",
+      "leaseStatus": "VACANT",
+      "amenities": [
+        "Air Conditioning",
+        "WiFi",
+        "Furnished",
+        "Security"
+      ],
+      "images": [
+        "https://images.pexels.com/photos/2343468/pexels-photo-2343468.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/2462015/pexels-photo-2462015.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "rules": [
+        "No smoking",
+        "No parties"
+      ],
+      "ownerId": "user_5",
+      "createdAt": "2024-09-15T00:00:00.000Z"
+    },
+    {
+      "id": "prop_3",
+      "title": "Spacious House in Bashundhara",
+      "description": "Beautiful family home with garden and modern amenities. Perfect for families looking for a comfortable living space.",
+      "address": "Block J, Road 7, Bashundhara R/A",
+      "city": "Dhaka",
+      "state": "Dhaka",
+      "zipCode": "1229",
+      "latitude": 23.8191,
+      "longitude": 90.4528,
+      "propertyType": "HOUSE",
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "area": 2200,
+      "maxOccupants": 6,
+      "monthlyRent": 2500,
+      "securityDeposit": 7500,
+      "isActive": true,
+      "availableFrom": "2024-12-01T00:00:00.000Z",
+      "leaseStatus": "VACANT",
+      "amenities": [
+        "Garden",
+        "Parking",
+        "Security",
+        "Backup Generator",
+        "Air Conditioning"
+      ],
+      "images": [
+        "https://images.pexels.com/photos/3555615/pexels-photo-3555615.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/2102586/pexels-photo-2102586.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "rules": [
+        "Family only",
+        "No smoking",
+        "Quiet neighborhood"
+      ],
+      "ownerId": "user_8",
+      "createdAt": "2024-08-10T00:00:00.000Z"
+    }
+  ],
+  "services": [
+    {
+      "id": "service_1",
+      "title": "Professional Cleaning Services",
+      "description": "Complete home and office cleaning services with trained professionals",
+      "category": "CLEANING",
+      "price": 2500,
+      "duration": 120,
+      "location": "Dhaka",
+      "serviceArea": [
+        "Gulshan",
+        "Dhanmondi",
+        "Bashundhara",
+        "Uttara"
+      ],
+      "isActive": true,
+      "images": [
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&q=80"
+      ],
+      "requirements": [
+        "Access to property",
+        "Water supply",
+        "Electricity"
+      ],
+      "providerId": "user_6",
+      "createdAt": "2024-01-08T00:00:00.000Z"
+    },
+    {
+      "id": "service_2",
+      "title": "Electrical & Plumbing Repairs",
+      "description": "Expert electrical and plumbing services for homes and offices",
+      "category": "MAINTENANCE",
+      "price": 1500,
+      "duration": 60,
+      "location": "Dhaka",
+      "serviceArea": [
+        "Dhaka",
+        "Chittagong",
+        "Sylhet"
+      ],
+      "isActive": true,
+      "images": [
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80"
+      ],
+      "requirements": [
+        "Description of problem",
+        "Access to work area"
+      ],
+      "providerId": "user_3",
+      "createdAt": "2024-03-05T00:00:00.000Z"
+    },
+    {
+      "id": "service_3",
+      "title": "Interior Painting Services",
+      "description": "Professional painting services for homes and commercial spaces",
+      "category": "PAINTING",
+      "price": 8000,
+      "duration": 480,
+      "location": "Dhaka",
+      "serviceArea": [
+        "Dhaka",
+        "Chittagong"
+      ],
+      "isActive": true,
+      "images": [
+        "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=400&q=80"
+      ],
+      "requirements": [
+        "Paint color selection",
+        "Surface preparation"
+      ],
+      "providerId": "user_9",
+      "createdAt": "2024-05-20T00:00:00.000Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review_1",
+      "rating": 4,
+      "comment": "Great apartment, very clean and modern. The location is perfect for my work.",
+      "reviewType": "PROPERTY",
+      "authorId": "user_1",
+      "propertyId": "prop_1",
+      "createdAt": "2024-09-25T00:00:00.000Z"
+    },
+    {
+      "id": "review_2",
+      "rating": 5,
+      "comment": "Excellent cleaning service. Very professional and thorough work.",
+      "reviewType": "SERVICE",
+      "authorId": "user_7",
+      "serviceId": "service_1",
+      "createdAt": "2024-09-20T00:00:00.000Z"
+    },
+    {
+      "id": "review_3",
+      "rating": 3,
+      "comment": "Good location but the apartment needs some maintenance work.",
+      "reviewType": "PROPERTY",
+      "authorId": "user_4",
+      "propertyId": "prop_2",
+      "createdAt": "2024-09-15T00:00:00.000Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_1",
+      "title": "Welcome to DreamNest!",
+      "message": "Thank you for joining our platform. Start exploring properties and services.",
+      "type": "GENERAL",
+      "isRead": false,
+      "userId": "user_1",
+      "createdAt": "2024-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "notif_2",
+      "title": "New Property Available",
+      "message": "A new luxury apartment in Gulshan has been listed. Check it out!",
+      "type": "GENERAL",
+      "isRead": false,
+      "userId": "user_7",
+      "propertyId": "prop_1",
+      "createdAt": "2024-09-20T00:00:00.000Z"
+    }
+  ]
+}
