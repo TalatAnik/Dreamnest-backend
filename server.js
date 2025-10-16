@@ -13,6 +13,13 @@ const authRoutes = require('./src/routes/auth');
 const propertyRoutes = require('./src/routes/properties');
 const serviceRoutes = require('./src/routes/serviceRoutes');
 const serviceBookingRoutes = require('./src/routes/serviceBookingRoutes');
+const reviewRoutes = require('./src/routes/reviews');
+const adminRoutes = require('./src/routes/admin');
+const uploadRoutes = require('./src/routes/upload');
+const searchRoutes = require('./src/routes/search');
+const dashboardRoutes = require('./src/routes/dashboard');
+const analyticsRoutes = require('./src/routes/analytics');
+const messageRoutes = require('./src/routes/messages');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -65,6 +72,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', serviceBookingRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Handle 404 for API routes
 app.use('/api/*', (req, res) => {
