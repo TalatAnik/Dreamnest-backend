@@ -19,7 +19,7 @@ const adminUserQuerySchema = Joi.object({
     }),
 
   status: Joi.string()
-    .valid('ACTIVE', 'SUSPENDED', 'DELETED')
+    .valid('ACTIVE', 'SUSPENDED')
     .optional()
     .messages({
       'any.only': 'Invalid status'
@@ -98,7 +98,7 @@ const adminUserUpdateSchema = Joi.object({
     }),
 
   status: Joi.string()
-    .valid('ACTIVE', 'SUSPENDED', 'DELETED')
+    .valid('ACTIVE', 'SUSPENDED')
     .optional()
     .messages({
       'any.only': 'Invalid status'
@@ -116,10 +116,10 @@ const adminUserUpdateSchema = Joi.object({
 
 const adminPropertyModerateSchema = Joi.object({
   status: Joi.string()
-    .valid('APPROVED', 'REJECTED', 'PENDING')
+    .valid('APPROVED', 'PENDING')
     .required()
     .messages({
-      'any.only': 'Status must be APPROVED, REJECTED, or PENDING',
+      'any.only': 'Status must be APPROVED or PENDING',
       'any.required': 'Status is required'
     })
 });

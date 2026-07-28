@@ -22,7 +22,7 @@ const sendMessage = async (req, res) => {
     }
 
     const { receiverId, content, messageType, propertyId, serviceId } = value;
-    const senderId = req.user.userId;
+    const senderId = req.user.id;
 
     // Validate receiver exists
     const receiver = await prisma.user.findUnique({
@@ -129,7 +129,7 @@ const getMessages = async (req, res) => {
     }
 
     const { otherUserId, page = 1, limit = 20 } = value;
-    const userId = req.user.userId;
+    const userId = req.user.id;
     const skip = (page - 1) * limit;
 
     let whereClause = {};
@@ -221,7 +221,7 @@ const getMessages = async (req, res) => {
  */
 const getConversations = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Get all unique conversations
     const conversations = await prisma.$queryRaw`
@@ -298,7 +298,7 @@ const markMessageRead = async (req, res) => {
     }
 
     const { id } = value;
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Check if message exists and user is the receiver
     const message = await prisma.message.findFirst({
@@ -350,7 +350,7 @@ const deleteMessage = async (req, res) => {
     }
 
     const { id } = value;
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Check if message exists and user is sender or receiver
     const message = await prisma.message.findFirst({

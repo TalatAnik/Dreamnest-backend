@@ -132,8 +132,7 @@ const getOwnerDashboard = async (req, res) => {
         createdAt: true,
         _count: {
           select: {
-            reviews: true,
-            serviceBookings: true
+            reviews: true
           }
         }
       },
@@ -204,7 +203,7 @@ const getOwnerDashboard = async (req, res) => {
     const earnings = await prisma.payment.aggregate({
       where: {
         status: 'COMPLETED',
-        booking: {
+        serviceBooking: {
           service: {
             providerId: userId
           }
@@ -259,7 +258,7 @@ const getProviderDashboard = async (req, res) => {
         _count: {
           select: {
             reviews: true,
-            serviceBookings: true
+            bookings: true
           }
         }
       },
@@ -334,7 +333,7 @@ const getProviderDashboard = async (req, res) => {
     const earnings = await prisma.payment.aggregate({
       where: {
         status: 'COMPLETED',
-        booking: {
+        serviceBooking: {
           service: {
             providerId: userId
           }
@@ -353,7 +352,7 @@ const getProviderDashboard = async (req, res) => {
         DATE_TRUNC('month', p."createdAt") as month,
         SUM(p.amount) as earnings
       FROM payments p
-      JOIN service_bookings sb ON p."bookingId" = sb.id
+      JOIN service_bookings sb ON p."serviceBookingId" = sb.id
       JOIN services s ON sb."serviceId" = s.id
       WHERE p.status = 'COMPLETED'
         AND s."providerId" = ${userId}

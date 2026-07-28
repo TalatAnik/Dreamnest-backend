@@ -43,7 +43,7 @@ const uploadFile = async (req, res) => {
           path: file.path,
           url: fileUrl,
           category: category.toUpperCase(),
-          uploadedById: req.user.userId
+          uploadedById: req.user.id
         }
       });
     }
@@ -84,7 +84,7 @@ const uploadAvatar = async (req, res) => {
 
     const file = req.file;
     const fileUrl = getFileUrl(req, file.path);
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Get current user to check if they have an existing avatar
     const user = await prisma.user.findUnique({
@@ -169,11 +169,11 @@ const getPublicProfile = async (req, res) => {
         createdAt: true,
         _count: {
           select: {
-            properties: {
-              where: { status: 'APPROVED' }
+            ownedProperties: {
+              where: { isActive: true }
             },
             services: {
-              where: { status: 'APPROVED' }
+              where: { isActive: true }
             },
             reviews: true
           }
@@ -192,14 +192,15 @@ const getPublicProfile = async (req, res) => {
     const properties = await prisma.property.findMany({
       where: {
         ownerId: userId,
-        status: 'APPROVED'
+        isActive: true
       },
       select: {
         id: true,
         title: true,
         description: true,
-        price: true,
-        location: true,
+        monthlyRent: true,
+        city: true,
+        state: true,
         images: true,
         createdAt: true,
         _count: {
@@ -216,7 +217,7 @@ const getPublicProfile = async (req, res) => {
     const services = await prisma.service.findMany({
       where: {
         providerId: userId,
-        status: 'APPROVED'
+        isActive: true
       },
       select: {
         id: true,
@@ -229,7 +230,7 @@ const getPublicProfile = async (req, res) => {
         _count: {
           select: {
             reviews: true,
-            serviceBookings: true
+            bookings: true
           }
         }
       },
@@ -298,7 +299,7 @@ const deleteUploadedFile = async (req, res) => {
     }
 
     // Check if user owns the file
-    if (file.uploadedById !== req.user.userId) {
+    if (file.uploadedById !== req.user.id) {
       return res.status(403).json({
         status: 'error',
         message: 'You can only delete your own files'

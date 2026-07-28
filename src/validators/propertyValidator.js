@@ -328,7 +328,7 @@ const validatePropertySearch = [
 
   query('sortBy')
     .optional()
-    .isIn(['createdAt', 'pricePerNight', 'title', 'area', 'bedrooms'])
+    .isIn(['createdAt', 'monthlyRent', 'title', 'area', 'bedrooms'])
     .withMessage('Invalid sort field'),
 
   query('sortOrder')

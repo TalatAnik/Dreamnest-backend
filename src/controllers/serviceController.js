@@ -18,7 +18,7 @@ const createService = async (req, res) => {
     } = req.body;
 
     // Verify user is a service provider
-    if (req.user.role !== 'service_provider') {
+    if (req.user.role !== 'SERVICE_PROVIDER') {
       return res.status(403).json({
         status: 'error',
         message: 'Only service providers can create services'
@@ -30,7 +30,7 @@ const createService = async (req, res) => {
 
     const service = await prisma.service.create({
       data: {
-        name,
+        title: name,
         description,
         category,
         price: parseFloat(price),
@@ -94,7 +94,7 @@ const getServices = async (req, res) => {
       isActive: true,
       ...(search && {
         OR: [
-          { name: { contains: search, mode: 'insensitive' } },
+          { title: { contains: search, mode: 'insensitive' } },
           { description: { contains: search, mode: 'insensitive' } }
         ]
       }),
@@ -111,7 +111,8 @@ const getServices = async (req, res) => {
 
     // Build orderBy clause
     const orderBy = {};
-    orderBy[sortBy] = sortOrder.toLowerCase();
+    const sortField = sortBy === 'name' ? 'title' : sortBy;
+    orderBy[sortField] = sortOrder.toLowerCase();
 
     const [services, total] = await Promise.all([
       prisma.service.findMany({
@@ -147,7 +148,7 @@ const getServices = async (req, res) => {
       // Transform to match frontend expectations
       return {
         id: service.id,
-        name: service.name,
+        name: service.title,
         category: service.category,
         description: service.description,
         price: service.price,
@@ -245,7 +246,7 @@ const getServiceById = async (req, res) => {
     // Transform to match frontend expectations
     const transformedService = {
       id: service.id,
-      name: service.name,
+      name: service.title,
       category: service.category,
       description: service.description,
       price: service.price,
@@ -323,7 +324,7 @@ const updateService = async (req, res) => {
     const updatedService = await prisma.service.update({
       where: { id },
       data: {
-        ...(name && { name }),
+        ...(name && { title: name }),
         ...(description && { description }),
         ...(category && { category }),
         ...(price && { price: parseFloat(price) }),
@@ -466,7 +467,7 @@ const getServicesByProvider = async (req, res) => {
 
       return {
         id: service.id,
-        name: service.name,
+        name: service.title,
         category: service.category,
         description: service.description,
         price: service.price,
@@ -563,7 +564,7 @@ const getProviderProfile = async (req, res) => {
         service: {
           select: {
             id: true,
-            name: true
+            title: true
           }
         }
       },
@@ -606,7 +607,7 @@ const getProviderProfile = async (req, res) => {
       },
       services: provider.services.map(service => ({
         id: service.id,
-        name: service.name,
+        name: service.title,
         category: service.category,
         description: service.description,
         price: service.price,
@@ -630,7 +631,7 @@ const getProviderProfile = async (req, res) => {
         },
         service: {
           id: review.service.id,
-          name: review.service.name
+          name: review.service.title
         },
         createdAt: review.createdAt
       }))

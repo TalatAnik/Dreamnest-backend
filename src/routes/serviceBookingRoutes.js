@@ -35,7 +35,7 @@ router.get('/:id',
 // Update booking status (Service Provider only)
 router.patch('/:id/status',
   authenticateToken,
-  requireRole(['service_provider']),
+  requireRole('SERVICE_PROVIDER'),
   serviceValidator.validateBookingId,
   serviceValidator.validateUpdateBookingStatus,
   validateRequest,

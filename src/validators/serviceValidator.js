@@ -185,8 +185,8 @@ const validateServiceQuery = [
 
   query('sortBy')
     .optional()
-    .isIn(['name', 'price', 'createdAt', 'category'])
-    .withMessage('Sort by must be one of: name, price, createdAt, category'),
+    .isIn(['title', 'price', 'createdAt', 'category'])
+    .withMessage('Sort by must be one of: title, price, createdAt, category'),
 
   query('sortOrder')
     .optional()

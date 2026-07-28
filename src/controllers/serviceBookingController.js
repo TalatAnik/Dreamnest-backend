@@ -58,12 +58,8 @@ const createServiceBooking = async (req, res) => {
       totalAmount = totalAmount * 1.5; // 50% urgency fee
     }
 
-    // Generate booking ID
-    const bookingId = `BK${Date.now().toString().slice(-6)}`;
-
     const booking = await prisma.serviceBooking.create({
       data: {
-        id: bookingId,
         serviceId,
         bookerId: req.user.id,
         scheduledDate: new Date(scheduledDate),
@@ -78,7 +74,7 @@ const createServiceBooking = async (req, res) => {
         service: {
           select: {
             id: true,
-            name: true,
+            title: true,
             category: true,
             price: true,
             duration: true
@@ -109,11 +105,11 @@ const createServiceBooking = async (req, res) => {
         <p>You have received a new booking request for your service:</p>
         
         <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px;">
-          <h3>${service.name}</h3>
+          <h3>${service.title}</h3>
           <p><strong>Customer:</strong> ${req.user.firstName} ${req.user.lastName}</p>
           <p><strong>Email:</strong> ${req.user.email}</p>
           <p><strong>Phone:</strong> ${req.user.phone || 'Not provided'}</p>
-          <p><strong>Booking ID:</strong> ${bookingId}</p>
+          <p><strong>Booking ID:</strong> ${booking.id}</p>
           <p><strong>Scheduled Date:</strong> ${new Date(scheduledDate).toLocaleDateString()}</p>
           <p><strong>Scheduled Time:</strong> ${scheduledTime}</p>
           <p><strong>Duration:</strong> ${Math.floor(service.duration / 60)} hours</p>
@@ -139,9 +135,9 @@ const createServiceBooking = async (req, res) => {
         <p>Your service booking request has been submitted successfully:</p>
         
         <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px;">
-          <h3>${service.name}</h3>
+          <h3>${service.title}</h3>
           <p><strong>Provider:</strong> ${service.provider.firstName} ${service.provider.lastName}</p>
-          <p><strong>Booking ID:</strong> ${bookingId}</p>
+          <p><strong>Booking ID:</strong> ${booking.id}</p>
           <p><strong>Scheduled Date:</strong> ${new Date(scheduledDate).toLocaleDateString()}</p>
           <p><strong>Scheduled Time:</strong> ${scheduledTime}</p>
           <p><strong>Duration:</strong> ${Math.floor(service.duration / 60)} hours</p>
@@ -162,7 +158,7 @@ const createServiceBooking = async (req, res) => {
     // Transform booking to match frontend expectations
     const transformedBooking = {
       id: booking.id,
-      service: booking.service.name,
+      service: booking.service.title,
       provider: `${service.provider.firstName} ${service.provider.lastName}`,
       customer: `${booking.booker.firstName} ${booking.booker.lastName}`,
       date: new Date(booking.scheduledDate).toLocaleDateString('en-US', { 
@@ -215,7 +211,7 @@ const getUserBookings = async (req, res) => {
           service: {
             select: {
               id: true,
-              name: true,
+              title: true,
               category: true,
               price: true,
               duration: true,
@@ -266,7 +262,7 @@ const getUserBookings = async (req, res) => {
           service: {
             select: {
               id: true,
-              name: true,
+              title: true,
               category: true,
               price: true,
               duration: true,
@@ -316,7 +312,7 @@ const getUserBookings = async (req, res) => {
     // Transform bookings to match frontend expectations
     const transformedBookings = bookings.map(booking => ({
       id: booking.id,
-      service: booking.service.name,
+      service: booking.service.title,
       provider: `${booking.service.provider.firstName} ${booking.service.provider.lastName}`,
       customer: `${booking.booker.firstName} ${booking.booker.lastName}`,
       date: new Date(booking.scheduledDate).toLocaleDateString('en-US', { 
@@ -414,7 +410,7 @@ const getBookingById = async (req, res) => {
       id: booking.id,
       service: {
         id: booking.service.id,
-        name: booking.service.name,
+        name: booking.service.title,
         category: booking.service.category,
         description: booking.service.description,
         price: booking.service.price,

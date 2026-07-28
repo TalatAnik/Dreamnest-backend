@@ -18,7 +18,7 @@ const getPropertyAnalytics = async (req, res) => {
     }
 
     const { id: propertyId } = value;
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Check if user owns the property
     const property = await prisma.property.findFirst({
@@ -42,21 +42,6 @@ const getPropertyAnalytics = async (req, res) => {
       lastMonth: Math.floor(Math.random() * 150) + 15
     };
 
-    // Get inquiry statistics
-    const inquiries = await prisma.propertyInquiry.count({
-      where: { propertyId }
-    });
-
-    // Get booking statistics (if property has associated services)
-    const bookings = await prisma.serviceBooking.count({
-      where: {
-        service: {
-          // Assuming services might be linked to properties
-          // In a real app, this would be more sophisticated
-        }
-      }
-    });
-
     // Get review statistics
     const reviews = await prisma.review.findMany({
       where: { propertyId },
@@ -69,21 +54,6 @@ const getPropertyAnalytics = async (req, res) => {
     const averageRating = reviews.length > 0
       ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
       : 0;
-
-    // Get monthly statistics (last 12 months)
-    const twelveMonthsAgo = new Date();
-    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-
-    const monthlyStats = await prisma.$queryRaw`
-      SELECT
-        DATE_TRUNC('month', "createdAt") as month,
-        COUNT(*) as inquiries
-      FROM property_inquiries
-      WHERE "propertyId" = ${propertyId}
-        AND "createdAt" >= ${twelveMonthsAgo}
-      GROUP BY DATE_TRUNC('month', "createdAt")
-      ORDER BY month DESC
-    `;
 
     // Get top inquiry sources (mock data)
     const topSources = [
@@ -100,11 +70,6 @@ const getPropertyAnalytics = async (req, res) => {
           title: property.title
         },
         views,
-        inquiries: {
-          total: inquiries,
-          monthly: monthlyStats
-        },
-        bookings,
         reviews: {
           total: reviews.length,
           averageRating: Number(averageRating.toFixed(1)),
@@ -144,7 +109,7 @@ const getServiceAnalytics = async (req, res) => {
     }
 
     const { id: serviceId } = value;
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Check if user provides the service
     const service = await prisma.service.findFirst({
@@ -230,7 +195,7 @@ const getServiceAnalytics = async (req, res) => {
         DATE_TRUNC('month', sb."createdAt") as month,
         SUM(p.amount) as revenue
       FROM service_bookings sb
-      JOIN payments p ON sb.id = p."bookingId"
+      JOIN payments p ON sb.id = p."serviceBookingId"
       WHERE sb."serviceId" = ${serviceId}
         AND p.status = 'COMPLETED'
         AND sb."createdAt" >= ${twelveMonthsAgo}
@@ -246,7 +211,7 @@ const getServiceAnalytics = async (req, res) => {
         u.email,
         COUNT(sb.id) as booking_count
       FROM service_bookings sb
-      JOIN users u ON sb."renterId" = u.id
+      JOIN users u ON sb."bookerId" = u.id
       WHERE sb."serviceId" = ${serviceId}
       GROUP BY u.id, u."firstName", u."lastName", u.email
       ORDER BY booking_count DESC

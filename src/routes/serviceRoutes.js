@@ -12,7 +12,7 @@ const { validateRequest } = require('../middleware/validateRequest');
 // Create new service (Service Providers only)
 router.post('/',
   authenticateToken,
-  requireRole(['service_provider']),
+  requireRole('SERVICE_PROVIDER'),
   upload.array('images', 10), // Allow up to 10 portfolio images
   handleMulterError,
   serviceValidator.validateCreateService,
@@ -68,7 +68,7 @@ router.get('/:id',
 // Update service (Service Provider only - own services)
 router.put('/:id',
   authenticateToken,
-  requireRole(['service_provider']),
+  requireRole('SERVICE_PROVIDER'),
   serviceValidator.validateServiceId,
   upload.array('images', 10), // Allow adding more portfolio images
   handleMulterError,
@@ -80,7 +80,7 @@ router.put('/:id',
 // Delete service (Service Provider only - own services)
 router.delete('/:id',
   authenticateToken,
-  requireRole(['service_provider']),
+  requireRole('SERVICE_PROVIDER'),
   serviceValidator.validateServiceId,
   validateRequest,
   serviceController.deleteService

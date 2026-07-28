@@ -153,8 +153,7 @@ const getProperties = async (req, res) => {
           },
           _count: {
             select: {
-              reviews: true,
-              bookings: true
+              reviews: true
             }
           }
         },
@@ -181,8 +180,7 @@ const getProperties = async (req, res) => {
         return {
           ...property,
           averageRating: avgRating._avg.rating || 0,
-          reviewCount: property._count.reviews,
-          bookingCount: property._count.bookings
+          reviewCount: property._count.reviews
         };
       })
     );
@@ -252,8 +250,7 @@ const getPropertyById = async (req, res) => {
         },
         _count: {
           select: {
-            reviews: true,
-            bookings: true
+            reviews: true
           }
         }
       }
@@ -280,8 +277,7 @@ const getPropertyById = async (req, res) => {
     const propertyWithRating = {
       ...property,
       averageRating: avgRating._avg.rating || 0,
-      reviewCount: property._count.reviews,
-      bookingCount: property._count.bookings
+      reviewCount: property._count.reviews
     };
 
     res.status(200).json({
@@ -415,16 +411,7 @@ const deleteProperty = async (req, res) => {
 
     // Check if property exists and user is owner
     const existingProperty = await prisma.property.findUnique({
-      where: { id },
-      include: {
-        bookings: {
-          where: {
-            status: {
-              in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS']
-            }
-          }
-        }
-      }
+      where: { id }
     });
 
     if (!existingProperty) {
@@ -438,14 +425,6 @@ const deleteProperty = async (req, res) => {
       return res.status(403).json({
         status: 'error',
         message: 'You can only delete your own properties'
-      });
-    }
-
-    // Check for active bookings
-    if (existingProperty.bookings.length > 0) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Cannot delete property with active bookings. Please wait for bookings to complete or cancel them first.'
       });
     }
 
@@ -498,8 +477,7 @@ const getUserProperties = async (req, res) => {
         include: {
           _count: {
             select: {
-              reviews: true,
-              bookings: true
+              reviews: true
             }
           }
         },
@@ -513,32 +491,20 @@ const getUserProperties = async (req, res) => {
     // Calculate average rating and recent booking stats
     const propertiesWithStats = await Promise.all(
       properties.map(async (property) => {
-        const [avgRating, recentBookings] = await Promise.all([
-          prisma.review.aggregate({
-            where: {
-              propertyId: property.id,
-              reviewType: 'PROPERTY'
-            },
-            _avg: {
-              rating: true
-            }
-          }),
-          prisma.booking.count({
-            where: {
-              propertyId: property.id,
-              createdAt: {
-                gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-              }
-            }
-          })
-        ]);
+        const avgRating = await prisma.review.aggregate({
+          where: {
+            propertyId: property.id,
+            reviewType: 'PROPERTY'
+          },
+          _avg: {
+            rating: true
+          }
+        });
 
         return {
           ...property,
           averageRating: avgRating._avg.rating || 0,
-          reviewCount: property._count.reviews,
-          totalBookings: property._count.bookings,
-          recentBookings
+          reviewCount: property._count.reviews
         };
       })
     );
@@ -665,7 +631,7 @@ const sendPropertyInquiry = async (req, res) => {
       Property Details:
       - Title: ${property.title}
       - Address: ${inquiryDetails.propertyAddress}
-      - Price per night: $${property.pricePerNight}
+      - Price per night: $${property.monthlyRent}
 
       Your Inquiry Details:
       - Check-in Date: ${inquiryDetails.checkInDate}

@@ -47,11 +47,11 @@ const getAdminDashboard = async (req, res) => {
 
     // Get pending moderations
     const pendingProperties = await prisma.property.count({
-      where: { status: 'PENDING' }
+      where: { isActive: false }
     });
 
     const pendingReviews = await prisma.review.count({
-      where: { status: 'PENDING' }
+      where: { isActive: false }
     });
 
     res.json({
@@ -107,7 +107,7 @@ const getAllUsers = async (req, res) => {
     // Build where clause
     const where = {};
     if (role) where.role = role;
-    if (status) where.status = status;
+    if (status) where.isActive = status === 'ACTIVE';
     if (search) {
       where.OR = [
         { firstName: { contains: search, mode: 'insensitive' } },
@@ -132,7 +132,7 @@ const getAllUsers = async (req, res) => {
         updatedAt: true,
         _count: {
           select: {
-            properties: true,
+            ownedProperties: true,
             services: true,
             serviceBookings: true,
             reviews: true
@@ -217,7 +217,7 @@ const updateUser = async (req, res) => {
         email: true,
         phone: true,
         role: true,
-        status: true,
+        isActive: true,
         avatar: true,
         createdAt: true,
         updatedAt: true
@@ -379,7 +379,7 @@ const moderateProperty = async (req, res) => {
     // Update property status
     const updatedProperty = await prisma.property.update({
       where: { id },
-      data: { status },
+      data: { isActive: status === 'APPROVED' },
       include: {
         owner: {
           select: {
@@ -471,7 +471,7 @@ const getAllBookings = async (req, res) => {
 
     const bookings = await prisma.serviceBooking.findMany({
       include: {
-        renter: {
+        booker: {
           select: {
             id: true,
             firstName: true,
@@ -621,16 +621,14 @@ const moderateReview = async (req, res) => {
     }
 
     // Determine status based on action
-    let status;
+    let isActive;
     switch (action) {
       case 'approve':
-        status = 'APPROVED';
-        break;
       case 'reject':
-        status = 'REJECTED';
+        isActive = true;
         break;
       case 'hide':
-        status = 'HIDDEN';
+        isActive = false;
         break;
       default:
         return res.status(400).json({
@@ -642,7 +640,7 @@ const moderateReview = async (req, res) => {
     // Update review status
     const updatedReview = await prisma.review.update({
       where: { id },
-      data: { status },
+      data: { isActive },
       include: {
         author: {
           select: {

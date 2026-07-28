@@ -109,17 +109,19 @@ const createReview = async (req, res) => {
     }
 
     const { targetId, targetType, rating, comment } = value;
-    const authorId = req.user.userId;
+    const authorId = req.user.id;
 
     // Validate target exists and user hasn't already reviewed
     let targetExists = false;
     let existingReview = null;
+    let targetUserId = null;
 
     if (targetType === 'PROPERTY') {
       const property = await prisma.property.findUnique({
         where: { id: targetId }
       });
       targetExists = !!property;
+      targetUserId = property?.ownerId || null;
 
       existingReview = await prisma.review.findFirst({
         where: {
@@ -132,6 +134,7 @@ const createReview = async (req, res) => {
         where: { id: targetId }
       });
       targetExists = !!service;
+      targetUserId = service?.providerId || null;
 
       existingReview = await prisma.review.findFirst({
         where: {
@@ -162,6 +165,7 @@ const createReview = async (req, res) => {
         comment,
         reviewType: targetType,
         authorId,
+        targetUserId,
         propertyId: targetType === 'PROPERTY' ? targetId : null,
         serviceId: targetType === 'SERVICE' ? targetId : null
       },
@@ -230,7 +234,7 @@ const updateReview = async (req, res) => {
 
     const { id } = idValue;
     const { rating, comment } = value;
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Find review and check ownership
     const review = await prisma.review.findUnique({
@@ -313,7 +317,7 @@ const deleteReview = async (req, res) => {
     }
 
     const { id } = value;
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Find review and check ownership
     const review = await prisma.review.findUnique({

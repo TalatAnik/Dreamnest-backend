@@ -36,7 +36,7 @@ const globalSearch = async (req, res) => {
       const properties = await prisma.property.findMany({
         where: {
           AND: [
-            { status: 'APPROVED' },
+            { isActive: true },
             {
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
@@ -52,7 +52,7 @@ const globalSearch = async (req, res) => {
           id: true,
           title: true,
           description: true,
-          price: true,
+          monthlyRent: true,
           address: true,
           city: true,
           state: true,
@@ -77,7 +77,7 @@ const globalSearch = async (req, res) => {
       });
 
       searchResults.properties = properties;
-      if (type === 'properties') totalResults += await prisma.property.count({ where: { status: 'APPROVED' } });
+      if (type === 'properties') totalResults += await prisma.property.count({ where: { isActive: true } });
     }
 
     // Search services
@@ -85,7 +85,7 @@ const globalSearch = async (req, res) => {
       const services = await prisma.service.findMany({
         where: {
           AND: [
-            { status: 'APPROVED' },
+            { isActive: true },
             {
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
@@ -113,7 +113,7 @@ const globalSearch = async (req, res) => {
           _count: {
             select: {
               reviews: true,
-              serviceBookings: true
+              bookings: true
             }
           }
         },
@@ -123,7 +123,7 @@ const globalSearch = async (req, res) => {
       });
 
       searchResults.services = services;
-      if (type === 'services') totalResults += await prisma.service.count({ where: { status: 'APPROVED' } });
+      if (type === 'services') totalResults += await prisma.service.count({ where: { isActive: true } });
     }
 
     // Search users (only for service providers and owners)
@@ -151,8 +151,8 @@ const globalSearch = async (req, res) => {
           createdAt: true,
           _count: {
             select: {
-              properties: { where: { status: 'APPROVED' } },
-              services: { where: { status: 'APPROVED' } },
+              ownedProperties: { where: { isActive: true } },
+              services: { where: { isActive: true } },
               reviews: true
             }
           }
@@ -174,8 +174,8 @@ const globalSearch = async (req, res) => {
     // Calculate total for all types search
     if (!type) {
       const [propertyCount, serviceCount, userCount] = await Promise.all([
-        prisma.property.count({ where: { status: 'APPROVED' } }),
-        prisma.service.count({ where: { status: 'APPROVED' } }),
+        prisma.property.count({ where: { isActive: true } }),
+        prisma.service.count({ where: { isActive: true } }),
         prisma.user.count({
           where: {
             isActive: true,
@@ -237,7 +237,7 @@ const getSearchSuggestions = async (req, res) => {
     // Get property title suggestions
     const propertyTitles = await prisma.property.findMany({
       where: {
-        status: 'APPROVED',
+        isActive: true,
         title: { contains: query, mode: 'insensitive' }
       },
       select: { title: true },
@@ -250,7 +250,7 @@ const getSearchSuggestions = async (req, res) => {
     // Get service title suggestions
     const serviceTitles = await prisma.service.findMany({
       where: {
-        status: 'APPROVED',
+        isActive: true,
         title: { contains: query, mode: 'insensitive' }
       },
       select: { title: true },
@@ -263,7 +263,7 @@ const getSearchSuggestions = async (req, res) => {
     // Get location suggestions (cities)
     const cities = await prisma.property.findMany({
       where: {
-        status: 'APPROVED',
+        isActive: true,
         city: { contains: query, mode: 'insensitive' }
       },
       select: { city: true, state: true },
@@ -276,7 +276,7 @@ const getSearchSuggestions = async (req, res) => {
     // Get service category suggestions
     const categories = await prisma.service.findMany({
       where: {
-        status: 'APPROVED',
+        isActive: true,
         category: { contains: query, mode: 'insensitive' }
       },
       select: { category: true },
